@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel em Tempo Real - Fretado SMART</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { color: #333; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .status-liberado { color: green; font-weight: bold; }
+        .refresh-btn { display: block; width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 15px; text-align: center; }
+        .refresh-btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Painel de Controlo - Passageiros a Bordo (SMART)</h2>
+        <button class="refresh-btn" onclick="carregarPassageiros()">Atualizar Lista</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Passageiro ID</th>
+                    <th>Linha / Rota</th>
+                    <th>Data e Hora</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-passageiros">
+                <tr><td colspan="4" style="text-align: center;">A carregar dados...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function carregarPassageiros() {
+            try {
+                const resposta = await fetch('http://localhost:3000/api/entradas');
+                const dados = await resposta.json();
+                
+                const tbody = document.getElementById('tabela-passageiros');
+                tbody.innerHTML = '';
+                
+                if (dados.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhum passageiro registado ainda.</td></tr>';
+                    return;
+                }
+                
+                dados.forEach(registo => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${registo.passageiroId}</td>
+                        <td>${registo.linha}</td>
+                        <td>${registo.dataHora}</td>
+                        <td><span class="status-liberado">${registo.status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (erro) {
+                console.error("Erro ao carregar dados:", erro);
+                document.getElementById('tabela-passageiros').innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erro ao ligar à API.</td></tr>';
+            }
+        }
+
+        // Carrega automaticamente ao abrir a página
+        carregarPassageiros();
+
+        // Atualiza automaticamente a tabela a cada 5 segundos
+        setInterval(carregarPassageiros, 5000);
+    </script>
+</body>
+</html>
