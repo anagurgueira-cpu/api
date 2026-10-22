@@ -1,120 +1,245 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart - Reconhecimento Facial Automático</title>
+    <title>SMART - Simulador de Câmara ESP32-CAM</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; margin-top: 30px; background-color: #0B2239; color: #F8FAFC; }
-        .container { background: #132F4C; max-width: 420px; margin: auto; padding: 24px; border-radius: 12px; border: 1px solid #1E3A5F; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-        .video-container { position: relative; width: 100%; height: 260px; margin-bottom: 15px; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #D4AF37; }
-        video, canvas { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
-        input { padding: 12px; font-size: 14px; width: 100%; margin-top: 10px; border: 1px solid #1E3A5F; background: #0B2239; color: #fff; border-radius: 6px; outline: none; box-sizing: border-box; }
-        .status-box { margin-top: 15px; padding: 14px; border-radius: 6px; font-weight: bold; font-size: 14px; background: rgba(0, 139, 139, 0.2); border: 1px solid #008B8B; }
-        .badge { background: #D4AF37; color: #0B2239; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        :root {
+            --bg-main: #0B2239; /* Azul-escuro SMART */
+            --bg-card: #132F4C; /* Azul dos cartões */
+            --primary: #D4AF37; /* Dourado/Amarelo SMART */
+            --accent: #008B8B;  /* Turquesa/Verde SMART */
+            --text-light: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border: #1E3A5F;
+            --success: #22C55E;
+            --danger: #EF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--bg-card);
+            max-width: 420px;
+            width: 100%;
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        .badge {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 12px;
+            border: 1px solid var(--primary);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+            margin-bottom: 20px;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 0.95rem;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            color: var(--text-light);
+            border-radius: 8px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            background-color: var(--primary);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .status-box {
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            word-break: break-word;
+            display: none;
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <span class="badge">SMART - ESP32-CAM / IA</span>
-        <h2>Leitura Facial Automática</h2>
-        <p style="font-size: 12px; color: #94A3B8;">Aproxime-se da câmara para registar o embarque.</p>
+        <span class="badge">SMART — ESP32-CAM</span>
+        <h2>Simulador de Acesso</h2>
+        <p class="subtitle">Validação de Embarque Fretado</p>
         
-        <div class="video-container">
+        <div class="video-wrapper">
             <video id="webcam" autoplay playsinline muted></video>
-            <canvas id="canvasOutput" style="display:none;"></canvas>
         </div>
         
-        <div>
-            <input type="text" id="passageiroId" value="Ana_Gurgueira_001" placeholder="RG ou Identificador do Passageiro">
+        <div class="form-group">
+            <label for="passageiroId">ID / RG do Passageiro:</label>
+            <input type="text" id="passageiroId" value="Ana_Gurgueira_001" placeholder="Ex: 12.345.678-9">
         </div>
+
+        <button onclick="enviarLeitura()">Simular Leitura de Acesso</button>
         
-        <div id="resultado" class="status-box">A iniciar câmara...</div>
+        <div id="resultado" class="status-box"></div>
     </div>
 
     <script>
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('canvasOutput');
-        const resElement = document.getElementById('resultado');
-        let emProcessamento = false;
-
-        // Iniciar a câmara do computador / dispositivo
-        async function iniciarCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 640, height: 480, facingMode: "user" }, 
-                    audio: false 
-                });
-                video.srcObject = stream;
-                resElement.innerText = "Câmara ativa! Posicione-se à frente.";
-                resElement.style.color = "#4ade80";
-
-                // Iniciar monitorização de presença após o vídeo começar
-                video.onplaying = () => {
-                    setInterval(detetarPresencaEEnviar, 3000); // Verifica a cada 3 segundos
-                };
-            } catch (error) {
+        // Inicializar a câmara do computador/dispositivo
+        navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+            .then(stream => {
+                const videoElement = document.getElementById('webcam');
+                videoElement.srcObject = stream;
+            })
+            .catch(error => {
                 console.error("Erro ao aceder à câmara:", error);
-                resElement.innerText = "Erro: Permissão de câmara negada ou abra via Live Server.";
-                resElement.style.color = "#EF4444";
-            }
-        }
+                exibirStatus("Aviso: Câmara não detetada ou sem permissão. Pode testar via botão.", "orange");
+            });
 
-        // Função que deteta movimento/rosto e envia para a API automaticamente
-        function detetarPresencaEEnviar() {
-            if (emProcessamento) return;
-
+        async function enviarLeitura() {
             const passageiroId = document.getElementById('passageiroId').value;
-            if (!passageiroId) return;
+            
+            if (!passageiroId) {
+                exibirStatus("Por favor, preencha o ID do passageiro.", "orange");
+                return;
+            }
 
-            emProcessamento = true;
-            resElement.innerText = "Rosto detetado! A enviar para a API...";
-            resElement.style.color = "#F59E0B";
+            exibirStatus("A ligar à API do Render...", "#008B8B");
 
-            enviarLeituraAPI(passageiroId);
-        }
-
-        async function enviarLeituraAPI(passageiroId) {
             try {
+                // Rota atualizada para a API remota no Render
                 const resposta = await fetch('https://api-t4bs.onrender.com/api/entrada', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         passageiroId: passageiroId,
                         linha: "Linha Principal - Rota Centro",
-                        dataHora: new Date().toISOString(),
-                        metodo: "Reconhecimento Facial Automático"
+                        dataHora: new Date().toISOString()
                     })
                 });
                 
                 const dados = await resposta.json();
-                resElement.innerText = "Sucesso: Acesso liberado para " + passageiroId;
-                resElement.style.background = "rgba(34, 197, 94, 0.2)";
-                resElement.style.borderColor = "#22C55E";
-                resElement.style.color = "#4ade80";
-
-                // Pausa de 8 segundos antes de permitir nova leitura para o mesmo passageiro
-                setTimeout(() => {
-                    emProcessamento = false;
-                    resElement.innerText = "A aguardar próximo passageiro...";
-                    resElement.style.background = "rgba(0, 139, 139, 0.2)";
-                    resElement.style.borderColor = "#008B8B";
-                    resElement.style.color = "#F8FAFC";
-                }, 8000);
-
+                
+                if (resposta.ok) {
+                    exibirStatus("Sucesso: " + (dados.mensagem || "Acesso registado!"), "green");
+                } else {
+                    exibirStatus("Resposta da API: " + (dados.mensagem || "Registo efetuado com restrições."), "orange");
+                }
+                
             } catch (erro) {
                 console.error(erro);
-                resElement.innerText = "Aviso: Rosto reconhecido (Erro de CORS/Servidor Render).";
-                resElement.style.color = "#F59E0B";
-                
-                setTimeout(() => { 
-                    emProcessamento = false; 
-                }, 5000);
+                exibirStatus("Erro: Não foi possível comunicar com o servidor no Render (verifique a ligação ou o CORS).", "red");
             }
         }
 
-        // Executar ao carregar a página
-        window.onload = iniciarCamera;
+        function exibirStatus(mensagem, cor) {
+            const resElement = document.getElementById('resultado');
+            resElement.style.display = "block";
+            resElement.innerText = mensagem;
+
+            if (cor === "green") {
+                resElement.style.background = "rgba(34, 197, 94, 0.15)";
+                resElement.style.border = "1px solid var(--success)";
+                resElement.style.color = "#4ade80";
+            } else if (cor === "red") {
+                resElement.style.background = "rgba(239, 68, 68, 0.15)";
+                resElement.style.border = "1px solid var(--danger)";
+                resElement.style.color = "#f87171";
+            } else if (cor === "orange") {
+                resElement.style.background = "rgba(245, 158, 11, 0.15)";
+                resElement.style.border = "1px solid #f59e0b";
+                resElement.style.color = "#fbbf24";
+            } else {
+                resElement.style.background = "rgba(0, 139, 139, 0.15)";
+                resElement.style.border = "1px solid var(--accent)";
+                resElement.style.color = "#38bdf8";
+            }
+        }
     </script>
 </body>
 </html>

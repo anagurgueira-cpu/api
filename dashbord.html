@@ -50,24 +50,30 @@
       margin-bottom: 32px;
     }
 
-    .brand-icon {
-      width: 40px;
-      height: 40px;
+    /* Estilo da Logo baseada na identidade visual SMART */
+    .brand-logo-container {
+      width: 44px;
+      height: 44px;
       background: var(--primary);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      color: var(--bg-main);
-      font-size: 1.2rem;
-      box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+      position: relative;
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+      border: 2px solid var(--accent);
+    }
+
+    .brand-logo-container svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--bg-main);
     }
 
     .brand-name {
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: 1px;
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
       color: var(--text-light);
     }
 
@@ -422,10 +428,15 @@
 </head>
 <body>
 
-  <!-- Menu Lateral -->
+  <!-- Menu Lateral com a Logo SMART -->
   <aside>
     <div class="brand">
-      <div class="brand-icon">📍</div>
+      <div class="brand-logo-container">
+        <!-- Ícone SVG de Autocarro Estilizado (Logo SMART) -->
+        <svg viewBox="0 0 24 24">
+          <path d="M4 16C4 16.55 4.45 17 5 17H6C6.55 17 7 16.55 7 16V15H17V16C17 16.55 17.45 17 18 17H19C19.55 17 20 16.55 20 16V11H4V16M18 6H6C4.9 6 4 6.9 4 8V10H20V8C20 6.9 19.1 6 18 6M7 8.5C7 8.22 7.22 8 7.5 8H9C9.28 8 9.5 8.22 9.5 8.5V9.5C9.5 9.78 9.28 10 9 10H7.5C7.22 10 7 9.78 7 9.5V8.5M15 8.5C15 8.22 15.22 8 15.5 8H17C17.28 8 17.5 8.22 17.5 8.5V9.5C17.5 9.78 17.28 10 17 10H15.5C15.22 10 15 9.78 15 9.5V8.5M6 13C5.45 13 5 12.55 5 12C5 11.45 5.45 11 6 11C6.55 11 7 11.45 7 12C7 12.55 6.55 13 6 13M18 13C17.45 13 17 12.55 17 12C17 11.45 17.45 11 18 11C18.55 11 19 11.45 19 12C19 12.55 18.55 13 18 13Z"/>
+        </svg>
+      </div>
       <div class="brand-name"><span>SMART</span></div>
     </div>
     <ul class="nav-links">
@@ -433,4 +444,248 @@
       <li id="nav-frota"><button onclick="mudarAba('frota')">🚍 Frota & Rotas</button></li>
       <li id="nav-refeitorio"><button onclick="mudarAba('refeitorio')">🍱 Refeitório</button></li>
       <li id="nav-frequencia"><button onclick="mudarAba('frequencia')">📈 Frequência</button></li>
-      <li id="nav-alertas"><button onclick="mudarAba('alertas')">⚠️ Alertas & Trânsito</button>
+      <li id="nav-alertas"><button onclick="mudarAba('alertas')">⚠️ Alertas & Trânsito</button></li>
+    </ul>
+  </aside>
+
+  <!-- Área Principal -->
+  <main>
+    <header>
+      <h1 id="titulo-pagina">Dashboard Operacional Unificado</h1>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="abrirModal()">➕ Novo Registo / Alerta</button>
+        <div class="user-profile">
+          <div class="avatar">AD</div>
+          <span>Administrador</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Indicadores Principais (KPIs) -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Frota em Operação</div>
+        <div class="kpi-value" id="kpi-frota">12 / 12</div>
+        <div class="kpi-footer">100% ativos nas rotas</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-title">Embarques Hoje (RG)</div>
+        <div class="kpi-value" id="kpi-embarques">225</div>
+        <div class="kpi-footer">▲ Sincronizado ESP32-CAM</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-title">Refeições Previstas</div>
+        <div class="kpi-value">208</div>
+        <div class="kpi-footer">Baseado no fretado</div>
+      </div>
+      <div class="kpi-card" style="border-left-color: var(--warning);">
+        <div class="kpi-title">Alertas Ativos</div>
+        <div class="kpi-value" id="kpi-alertas">2</div>
+        <div class="kpi-footer" style="color: var(--warning);">Monitorização online</div>
+      </div>
+    </div>
+
+    <!-- ABA 1: VISÃO GERAL -->
+    <div id="tab-geral" class="dashboard-grid card active-tab" style="display: grid; border: none; background: transparent; padding: 0; box-shadow: none;">
+      <div class="card active-tab" style="display: block;">
+        <div class="card-header">
+          <h2>🚍 Status Atual das Linhas & Fretados</h2>
+          <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="atualizarDados()">🔄 Atualizar</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Linha / Rota</th>
+              <th>Motorista (CNH)</th>
+              <th>Passageiros</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Linha Norte 01</strong></td><td>Carlos Silva</td><td>45 / 45</td><td><span class="badge badge-on">Em Rota</span></td></tr>
+            <tr><td><strong>Linha Sul 02</strong></td><td>Marcos Oliveira</td><td>42 / 45</td><td><span class="badge badge-on">Em Rota</span></td></tr>
+            <tr><td><strong>Linha Leste 03</strong></td><td>Roberto Santos</td><td>38 / 40</td><td><span class="badge badge-alert">Atraso Leve</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card active-tab" style="display: block;">
+        <div class="card-header">
+          <h2>⚠️ Ocorrências Recentes</h2>
+        </div>
+        <div>
+          <div class="alert-item">
+            <div class="alert-dot"></div>
+            <div class="alert-content">
+              <p>Trânsito intenso na Rodovia</p>
+              <span>Linha Leste 03 com 12 min de atraso</span>
+            </div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot" style="background: var(--success);"></div>
+            <div class="alert-content">
+              <p>Sincronização Offline Concluída</p>
+              <span>Check-ins validados com sucesso</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 2: FROTA & ROTAS -->
+    <div id="tab-frota" class="card">
+      <div class="card-header">
+        <h2>Gestão Completa de Frotas e Motoristas</h2>
+        <button class="btn btn-primary" onclick="abrirModal()">Cadastrar Novo Ônibus</button>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 16px;">Listagem de veículos terceirizados vinculados às linhas ativas da empresa.</p>
+      <table>
+        <thead>
+          <tr><th>Empresa Terceirizada</th><th>Placa</th><th>Linha</th><th>Motorista</th><th>Ação</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Transportes Alpha</td><td>ABC-1234</td><td>Linha Norte 01</td><td>Carlos Silva</td><td><button class="btn" style="padding:4px 8px; font-size:0.8rem;" onclick="alert('Detalhes da frota abertos!')">Ver</button></td></tr>
+          <tr><td>Beta Fretados</td><td>XYZ-9876</td><td>Linha Sul 02</td><td>Marcos Oliveira</td><td><button class="btn" style="padding:4px 8px; font-size:0.8rem;" onclick="alert('Detalhes da frota abertos!')">Ver</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ABA 3: REFEITÓRIO -->
+    <div id="tab-refeitorio" class="card">
+      <div class="card-header">
+        <h2>Gestão de Refeições & Insumos</h2>
+        <span class="badge badge-on">Integrado com Fretados</span>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 16px;">Previsão diária calculada com base na presença confirmada nos transportes.</p>
+      <div style="background: var(--bg-main); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+        <p>🥩 <strong>Carne de Hoje:</strong> Bife Grelhado (180g / pessoa)</p>
+        <p>📊 <strong>Total de Refeições Calculadas:</strong> 208 pessoas</p>
+        <p>⚖️ <strong>Quantidade de Carne Necessária:</strong> 37.4 kg (Pronta) / 50.5 kg (Crua)</p>
+      </div>
+    </div>
+
+    <!-- ABA 4: FREQUÊNCIA DOS USUÁRIOS -->
+    <div id="tab-frequencia" class="card">
+      <div class="card-header">
+        <h2>📈 Relatório de Frequência e Assiduidade (RG)</h2>
+        <button class="btn btn-primary" onclick="alert('Relatório de frequência exportado com sucesso!')">📥 Exportar Relatório</button>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">Registo diário de embarques dos colaboradores via leitura de QR Code / IA.</p>
+      
+      <div style="margin-bottom: 24px;">
+        <div class="freq-bar-container">
+          <div class="freq-info"><span>Segunda-feira (225 embarques)</span><strong>98%</strong></div>
+          <div class="freq-bar"><div class="freq-progress" style="width: 98%;"></div></div>
+        </div>
+        <div class="freq-bar-container">
+          <div class="freq-info"><span>Terça-feira (230 embarques)</span><strong>99%</strong></div>
+          <div class="freq-bar"><div class="freq-progress" style="width: 99%;"></div></div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Colaborador</th><th>RG / Identificador</th><th>Ponto de Parada</th><th>Linha</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ana Souza</td><td>12.345.678-9</td><td>Parada Central</td><td>Linha Norte 01</td><td><span class="badge badge-on">Confirmado</span></td></tr>
+          <tr><td>Bruno Lima</td><td>23.456.789-0</td><td>Praça da Matriz</td><td>Linha Sul 02</td><td><span class="badge badge-on">Confirmado</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ABA 5: ALERTAS -->
+    <div id="tab-alertas" class="card">
+      <div class="card-header">
+        <h2>Central de Alertas e Trânsito</h2>
+        <button class="btn btn-primary" onclick="alert('Alerta geral disparado para todos os motoristas!')">Disparar Aviso Geral</button>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 16px;">Monitorização em tempo real das condições rodoviárias e avisos de aproximação.</p>
+      <div class="alert-item">
+        <div class="alert-dot"></div>
+        <div class="alert-content">
+          <p>Condição Rodoviária: Normal</p>
+          <span>Nenhum bloqueio severo reportado nas rotas principais até o momento.</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL DE CADASTRO / ALERTA -->
+  <div class="modal-overlay" id="modalRegisto">
+    <div class="modal">
+      <h3>Adicionar Novo Registo / Alerta</h3>
+      <div class="form-group">
+        <label>Tipo de Registo:</label>
+        <select id="tipoRegisto">
+          <option value="alerta">Alerta de Trânsito</option>
+          <option value="frota">Novo Ônibus / Frota</option>
+          <option value="suporte">Solicitação de Suporte</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Descrição / Informação:</label>
+        <input type="text" id="descRegisto" placeholder="Ex: Atraso na Linha 02 devido a obras...">
+      </div>
+      <div class="modal-actions">
+        <button class="btn" style="background: var(--border);" onclick="fecharModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarRegisto()">Guardar Registo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function mudarAba(aba) {
+      document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+      document.getElementById('nav-' + aba).classList.add('active');
+
+      document.querySelectorAll('main > .card, main > .dashboard-grid').forEach(el => {
+        el.classList.remove('active-tab');
+        el.style.display = 'none';
+      });
+
+      const selecionado = document.getElementById('tab-' + aba);
+      if (selecionado) {
+        selecionado.style.display = aba === 'geral' ? 'grid' : 'block';
+        selecionado.classList.add('active-tab');
+      }
+
+      const titulos = {
+        'geral': 'Dashboard Operacional Unificado',
+        'frota': 'Gestão de Frotas e Veículos Terceirizados',
+        'refeitorio': 'Planeamento e Gestão do Refeitório',
+        'frequencia': 'Relatório de Frequência e Assiduidade',
+        'alertas': 'Central de Alertas e Trânsito em Tempo Real'
+      };
+      document.getElementById('titulo-pagina').innerText = titulos[aba];
+    }
+
+    function abrirModal() {
+      document.getElementById('modalRegisto').style.display = 'flex';
+    }
+
+    function fecharModal() {
+      document.getElementById('modalRegisto').style.display = 'none';
+    }
+
+    function salvarRegisto() {
+      const tipo = document.getElementById('tipoRegisto').value;
+      const desc = document.getElementById('descRegisto').value;
+      if (!desc) {
+        alert('Por favor, preencha a descrição.');
+        return;
+      }
+      alert('Registo criado com sucesso: [' + tipo.toUpperCase() + '] ' + desc);
+      fecharModal();
+      document.getElementById('descRegisto').value = '';
+    }
+
+    function atualizarDados() {
+      alert('Dados sincronizados com sucesso com o servidor central e ESP32-CAM!');
+      document.getElementById('kpi-embarques').innerText = Math.floor(220 + Math.random() * 15);
+    }
+  </script>
+
+</body>
+</html>
